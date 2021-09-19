@@ -1,27 +1,29 @@
 from django.shortcuts import render
 from .models import UserPhoneNumber, Car, Conversation, MassageText
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 # Create your views here.
 
-
+@csrf_exempt
 def add_user(request):
     if request.method == "POST":
-        form_data = json.loads(request.POST['form_imput'])
         phone_number = request.POST['phone']
         car_reg = request.POST['car_reg']
-        user_list = UserPhoneNumber.objects.filter(phone_number = phone_number)
+        #user_list = UserPhoneNumber.objects.filter(phone_number = phone_number)
         car_list = Car.objects.filter(registration_number = car_reg)
-        if not user_list:
-            UserPhoneNumber.objects.create(phone_number = phone_number, owned_car = car_reg)
-            UserPhoneNumber.save()
-
         if not car_list:
-            Car.create(registration_number = car_reg, car_owner = phone_number)
-            Car.save()
+            car_obj = Car.objects.create(registration_number = car_reg)
+            car_obj.save()
+        else:
+            car_obj = car_list[0]
+            car_obj.owner_phone.create(phone_number = phone_number)
+
+        return JsonResponse(status=201, data={'status':'201_created'})
 
     else:
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(status=400, data={'status':'400_bad_request'})
 
 def new_conversation(request):
-
+    pass
 
